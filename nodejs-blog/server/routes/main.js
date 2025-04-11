@@ -36,6 +36,55 @@ router.get("", async (req, res) => {
   }
 });
 
+/**
+ * GET /
+ * Post :id
+ */
+router.get("/post/:id", async (req, res) => {
+  try {
+    const slug = req.params.id;
+    const data = await Post.findById({ _id: slug });
+    const locals = {
+      title: data.title,
+      description: "A simple blog created with NodeJs, Express and MongoDB.",
+    };
+
+    res.render("post", {
+      locals,
+      data,
+    });
+  } catch (error) {
+    console.error(error);
+  }
+});
+
+/**
+ * POST /search
+ * Post - searchTerm
+ */
+router.post("/search", async (req, res) => {
+  try {
+    const locals = {
+      title: "Search",
+      description: "A simple blog created with NodeJs, Express and MongoDB.",
+    };
+
+    const searchTerm = req.body.searchTerm;
+    const searchNoSpecialChar = searchTerm.replace(/[^a-zA-Z0-9]/g, "");
+
+    const data = await Post.find({
+      $or: [
+        { title: { $regex: new RegExp(searchNoSpecialChar, "i") } },
+        { body: { $regex: new RegExp(searchNoSpecialChar, "i") } },
+      ],
+    });
+
+    res.render("search", { locals, data });
+  } catch (error) {
+    console.error(error);
+  }
+});
+
 router.get("/about", (req, res) => {
   res.render("about");
 });
